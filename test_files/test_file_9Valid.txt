@@ -1,0 +1,46 @@
+#prova
+main
+    integer a := 0;
+    if a = 0 then
+        var b1 := 2;
+        integer b2;
+        b2 := b1 + a;
+        if b1 = 2 then
+            integer b3 := 4;
+            real b1;
+            while b2 < 10 loop
+                integer b1 :=99+b2;
+                integer w1 := 1;
+                ?. "w1: " & w1;
+                ?. "b1: " & b1;
+                b2 := b2 + 1;
+            end loop;
+            b1 := 333.44;
+            ?. "b1: " & b1;
+            ?. "b3: " & b3;
+        else
+          integer b3 := 400;
+          real b1;
+          while b2 < 10 loop
+              integer b1 := 222+b2;
+              integer w1 := 100;
+              ?. "w1: " & w1;
+              ?. "b1: " & b1;
+              b2 := b2 + 1;
+          end loop;
+          b1 := 220.1;
+          ?. "b1: " & b1;
+          ?. "b3: " & b3;
+        end if;
+        ?. "a: " & a;
+        ?. "b1: " & b1;
+        ?. "b2: " & b2;
+    else
+        var c1 := 20;
+        integer c2;
+        c2 := c1 + a;
+        ?. "a: " & a;
+        ?. "c1: " & c1;
+        ?. "c2: " & c2;
+    end if;
+end main;

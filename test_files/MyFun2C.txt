@@ -1,0 +1,78 @@
+Fun addizione (integer madrid, integer sociedad): integer
+    return madrid+sociedad;
+end Fun;
+
+Fun moltiplicazione (integer madrid, integer sociedad): integer
+    integer index := 1, result := madrid;
+
+    while index < sociedad loop
+        result := result + madrid;
+        index := index + 1;
+    end loop;
+
+    return result;
+end Fun;
+
+Fun divisione_intera (integer madrid, integer sociedad): integer
+    return madrid div sociedad;
+end Fun;
+
+Fun potenza (integer madrid, integer sociedad): integer
+    return madrid^sociedad;
+end Fun;
+
+Fun fibonacci(integer n): integer
+    if n = 0 or n = 1 then
+        return 1;
+    else
+        return fibonacci(n-1) + fibonacci(n-2);
+    end if;
+end Fun;
+
+Fun stampa(string message)
+    ?. message;
+end Fun;
+
+Fun stampa_menu()
+    stampa("1_addizione");
+    stampa("2_moltiplicazione");
+    stampa("3_divisione_intera");
+    stampa("4_potenza");
+    stampa("5_fibonacci");
+end Fun;
+
+Fun calcola_valore(integer opd1, integer opd2, integer operazione): integer
+    if operazione = 1 then return addizione(opd1,opd2); end if;
+    if operazione = 2 then return moltiplicazione(opd1,opd2); end if;
+    if operazione = 3 then return divisione_intera(opd1,opd2); end if;
+    if operazione = 4 then return potenza(opd1,opd2); end if;
+end Fun;
+
+main
+    integer continuare := 1;
+    integer operazione := 0;
+    integer opd1 := 0;
+    integer opd2 := 0;
+    integer result := 0;
+
+    while continuare = 1 loop
+        stampa_menu();
+
+        % operazione "Scegli operazione: ";
+
+        if operazione = 5 then
+            % opd1 "Digita numero (intero): ";
+            result := fibonacci(opd1);
+            ?. "Il risultato dello uso della operazione numero " & operazione & " per " & opd1 & " fa " & result;
+        else
+            % opd1 "Digita il primo operando (intero): ";
+            % opd2 "Digita il secondo operando (intero): ";
+
+            result := calcola_valore(opd1,opd2,operazione);
+
+            ?. "Il risultato dello uso della operazione numero " & operazione & " tra " & opd1 & " e " & opd2 & " fa " & result;
+        end if;
+
+        % continuare "Prima hai scelto laoperazione " & operazione & ", ora inserisci " & 0+1 & " per continuare " & fibonacci(0)-1 & " per terminare ";
+    end loop;
+end main;

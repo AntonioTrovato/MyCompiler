@@ -1,0 +1,268 @@
+/*Package and Imports*/
+
+
+import javax.swing.JTree;
+import classes.view.JTreeFrame;
+import classes.innernodes.*;
+import classes.leaves.*;
+import classes.listnodes.*;
+
+/*Terminal Declarations*/
+terminal MAIN;
+terminal String ID;
+terminal INTEGER;
+terminal STRING;
+terminal REAL;
+terminal BOOL;
+terminal LPAR;
+terminal RPAR;
+terminal COLON;
+terminal FUN;
+terminal END;
+terminal IF;
+terminal THEN;
+terminal ELSE;
+terminal WHILE;
+terminal LOOP;
+terminal READ;
+terminal WRITE;
+terminal WRITELN;
+terminal WRITEB;
+terminal WRITET;
+terminal ASSIGN;
+terminal PLUS;
+terminal MINUS;
+terminal TIMES;
+terminal DIVINT;
+terminal DIV;
+terminal POW;
+terminal STR_CONCAT;
+terminal EQ;
+terminal NE;
+terminal LT;
+terminal LE;
+terminal GT;
+terminal GE;
+terminal AND;
+terminal OR;
+terminal NOT;
+terminal TRUE;
+terminal FALSE;
+terminal Integer INTEGER_CONST;
+terminal Double REAL_CONST;
+terminal String STRING_CONST;
+terminal SEMI;
+terminal COMMA;
+terminal RETURN;
+terminal OUTPAR;
+terminal VAR;
+terminal OUT;
+
+/*Non-Terminal Declarations*/
+nonterminal ProgramNode Program;
+nonterminal VarDeclList VarDeclList;
+nonterminal MainNode Main;
+nonterminal FunList FunList;
+nonterminal VarDeclNode VarDecl;
+nonterminal TypeLeaf Type;
+nonterminal IdListInit IdListInit;
+nonterminal IdListInitObbl IdListInitObbl;
+nonterminal ConstLeaf Const;
+nonterminal FunNode Fun;
+nonterminal ParamDeclList ParamDeclList;
+nonterminal NonEmptyParamDeclList NonEmptyParamDeclList;
+nonterminal ParDeclNode ParDecl;
+nonterminal StatList StatList;
+nonterminal StatNode Stat;
+nonterminal IfStatNode IfStat;
+nonterminal ElseNode Else;
+nonterminal WhileStatNode WhileStat;
+nonterminal ReadStatNode ReadStat;
+nonterminal IdList IdList;
+nonterminal WriteStatNode WriteStat;
+nonterminal AssignStatNode AssignStat;
+nonterminal CallFunNode CallFun;
+nonterminal ExprList ExprList;
+nonterminal ExprNode Expr;
+
+/*Precedences*/
+precedence left OR;
+precedence left AND;
+precedence right NOT;
+precedence nonassoc EQ, NE, LT, LE, GT, GE;
+precedence left STR_CONCAT;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV, DIVINT;
+precedence right POW;
+precedence left LPAR, RPAR;
+precedence right MINUS;
+
+/*Grammar*/
+Program ::= VarDeclList:varDeclList FunList:funList Main:mainNode
+{: ProgramNode programNode = new ProgramNode(varDeclList, funList, mainNode);
+   RESULT = programNode; :};
+
+VarDeclList ::= /* empty */ {: VarDeclList varDeclList = new VarDeclList(); RESULT = varDeclList; :}
+	| VarDecl:varDeclNode VarDeclList:varDeclList
+{: varDeclList.addVarDeclNode(varDeclNode); RESULT = varDeclList; :};
+
+Main ::= MAIN VarDeclList:varDeclList StatList:statList END MAIN SEMI
+{: RESULT = new MainNode(varDeclList, statList); :};
+
+FunList ::= /* empty */ {: FunList funList = new FunList(); RESULT = funList; :}
+	| Fun:funNode FunList:funList
+{:  funList.addFunNode(funNode); RESULT = funList; :};
+
+VarDecl ::= Type:type IdListInit:idListInit SEMI
+{: RESULT = new VarDeclNode(type, idListInit); :}
+	| VAR IdListInitObbl:idListInitObbl SEMI
+{: RESULT = new VarDeclNode(new VarLeaf(), idListInitObbl); :};
+
+Type ::= INTEGER {: RESULT = new TypeLeaf("INTEGER"); :}
+        | BOOL {: RESULT = new TypeLeaf("BOOL"); :}
+        | REAL {: RESULT = new TypeLeaf("REAL"); :}
+        | STRING {: RESULT = new TypeLeaf("STRING"); :} ;
+
+IdListInit ::= ID:lexVal
+{: IdListInit idListInit = new IdListInit(new IdLeaf(lexVal)); RESULT = idListInit; :}
+	| IdListInit:idListInit COMMA ID:lexVal
+{: idListInit.addExprListElement(new IdLeaf(lexVal)); RESULT = idListInit; :}
+	| ID:lexVal ASSIGN Expr:exprNode
+{: IdListInit idListInit = new IdListInit(new IdLeaf(lexVal), exprNode); RESULT = idListInit; :}
+	| IdListInit:idListInit COMMA ID:lexVal ASSIGN Expr:exprNode
+{: idListInit.addExprListElement(new IdLeaf(lexVal), exprNode); RESULT = idListInit; :};
+
+IdListInitObbl ::= ID:lexVal ASSIGN Const:constLeaf
+{: IdListInitObbl idListInitObbl = new IdListInitObbl(new IdLeaf(lexVal), constLeaf); RESULT = idListInitObbl; :}
+	| IdListInitObbl:idListInitObbl COMMA ID:lexVal ASSIGN Const:constLeaf
+{: idListInitObbl.addExprListElement(new IdLeaf(lexVal), constLeaf); RESULT = idListInitObbl; :};
+
+Const ::= INTEGER_CONST:lexVal {: RESULT = new ConstLeaf("ConstLeaf", Integer.toString(lexVal)); :}
+        | REAL_CONST:lexVal {: RESULT = new ConstLeaf("ConstLeaf", Double.toString(lexVal)); :}
+        | TRUE {: RESULT = new ConstLeaf("ConstLeaf", "true"); :}
+        | FALSE {: RESULT = new ConstLeaf("ConstLeaf", "false"); :}
+        | STRING_CONST:lexVal {: RESULT = new ConstLeaf("ConstLeaf", String.valueOf(lexVal).replace("'","\"")); :}
+        | MINUS INTEGER_CONST:lexVal {: RESULT = new ConstLeaf("ConstLeaf", Integer.toString(-lexVal)); :}
+        | MINUS REAL_CONST:lexVal {: RESULT = new ConstLeaf("ConstLeaf", Double.toString(-lexVal)); :};
+
+Fun ::= FUN ID:lexVal LPAR ParamDeclList:paramDeclList RPAR COLON Type:type
+		VarDeclList:varDeclList StatList:statList END FUN SEMI
+{: RESULT = new FunNode(new IdLeaf(lexVal), paramDeclList, type, varDeclList, statList); :}
+	| FUN ID:lexVal LPAR ParamDeclList:paramDeclList RPAR
+		VarDeclList:varDeclList StatList:statList END FUN SEMI
+{: RESULT = new FunNode(new IdLeaf(lexVal), paramDeclList, varDeclList, statList); :};
+
+
+ParamDeclList ::= /*empty */
+{: ParamDeclList paramDeclList = new ParamDeclList(); RESULT = paramDeclList; :}
+	| NonEmptyParamDeclList:nonEmptyParamDeclList
+{: ParamDeclList paramDeclList = new ParamDeclList(); paramDeclList.addNonEmptyParamDeclList(nonEmptyParamDeclList); RESULT = paramDeclList; :} ;
+
+NonEmptyParamDeclList ::= ParDecl:parDeclNode
+{: NonEmptyParamDeclList nonEmptyParamDeclList = new NonEmptyParamDeclList(parDeclNode); RESULT = nonEmptyParamDeclList; :}
+	| NonEmptyParamDeclList:nonEmptyParamDeclList COMMA ParDecl:parDeclNode
+{: nonEmptyParamDeclList.addParDeclNode(parDeclNode); RESULT = nonEmptyParamDeclList; :};
+
+ParDecl ::= Type:type ID:lexVal
+{: RESULT = new ParDeclNode(type, new IdLeaf(lexVal)); :}
+	      | OUT Type:type ID:lexVal
+{: RESULT = new ParDeclNode(new OutLeaf(), type, new IdLeaf(lexVal)); :};
+
+StatList ::= Stat:statNode SEMI {: StatList statList = new StatList(statNode); RESULT = statList; :}
+	 | Stat:statNode SEMI StatList:statList
+{: statList.addStatNode(statNode); RESULT = statList; :};
+
+Stat ::= IfStat:ifNode {: RESULT = new StatNode(ifNode); :}
+	| WhileStat:whileNode {: RESULT = new StatNode(whileNode); :}
+	| ReadStat:readNode {: RESULT = new StatNode(readNode); :}
+	| WriteStat:writeNode {: RESULT = new StatNode(writeNode); :}
+	| AssignStat:assignNode {: RESULT = new StatNode(assignNode); :}
+	| CallFun:callFunNode {: RESULT = new StatNode(callFunNode); :}
+	| RETURN Expr:exprNode {: RESULT = new StatNode(exprNode); :}
+	| /* empty */;
+
+IfStat ::= IF Expr:exprNode THEN VarDeclList:varDeclList StatList:statList Else:elseNode END IF
+{: RESULT = new IfStatNode(exprNode, varDeclList, statList, elseNode); :};
+
+Else ::= /* empty */ {: RESULT = new ElseNode(); :}
+	| ELSE VarDeclList:varDeclList  StatList:statList
+{: RESULT = new ElseNode(varDeclList, statList); :};
+
+WhileStat ::= WHILE Expr:exprNode LOOP VarDeclList:varDeclList  StatList:statList END LOOP
+{: RESULT = new WhileStatNode(exprNode, varDeclList, statList); :};
+
+ReadStat ::= READ IdList:idList Expr:exprNode
+{: RESULT = new ReadStatNode(idList, exprNode); :}
+	| READ IdList:idList
+{: RESULT = new ReadStatNode(idList); :};
+
+IdList ::= ID:lexVal {: IdList idList = new IdList(new IdLeaf(lexVal)); RESULT = idList; :}
+	| IdList:idList COMMA ID:lexVal
+{: idList.addIdLeaf(new IdLeaf(lexVal)); RESULT = idList; :};
+
+WriteStat ::=  WRITE  Expr:exprNode
+{: RESULT = new WriteStatNode(new WriteStatLeaf("WRITE") ,exprNode); :}
+	| WRITELN  Expr:exprNode
+{: RESULT = new WriteStatNode(new WriteStatLeaf("WRITELN") ,exprNode); :}
+	| WRITET  Expr:exprNode
+{: RESULT = new WriteStatNode(new WriteStatLeaf("WRITET") ,exprNode); :}
+	| WRITEB  Expr:exprNode
+{: RESULT = new WriteStatNode(new WriteStatLeaf("WRITEB") ,exprNode); :};
+
+AssignStat ::=  ID:lexVal ASSIGN Expr:exprNode
+{: RESULT = new AssignStatNode(new IdLeaf(lexVal), exprNode); :} ;
+
+CallFun ::= ID:lexVal LPAR ExprList:exprList RPAR
+{: RESULT = new CallFunNode(new IdLeaf(lexVal), exprList); :}
+	| ID:lexVal LPAR RPAR
+{: RESULT = new CallFunNode(new IdLeaf(lexVal)); :} ;
+
+ExprList ::= Expr:exprNode
+{: ExprList exprList = new ExprList(exprNode); RESULT = exprList; :}
+	| Expr:exprNode COMMA ExprList:exprList
+{: exprList.addExprListElement(exprNode); RESULT = exprList; :}
+	| OUTPAR ID:lexVal
+{: ExprList exprList = new ExprList(new IdLeaf("@"+lexVal)); RESULT = exprList; :}
+	| OUTPAR ID:lexVal COMMA ExprList:exprList
+{: exprList.addExprListElement(new IdLeaf("@"+lexVal)); RESULT = exprList; :} ;
+
+Expr ::= TRUE {: RESULT = new ExprNode(new ConstLeaf("true", "true")); :}
+	| FALSE {: RESULT = new ExprNode(new ConstLeaf("false", "false")); :}
+	| INTEGER_CONST:lexVal {: RESULT = new ExprNode(new ConstLeaf("INTEGER_CONST", Integer.toString(lexVal))); :}
+	| REAL_CONST:lexVal {: RESULT = new ExprNode(new ConstLeaf("REAL_CONST", Double.toString(lexVal))); :}
+	| STRING_CONST:lexVal {: RESULT = new ExprNode(new ConstLeaf("STRING_CONST", lexVal)); :}
+	| ID:lexVal {: RESULT = new ExprNode(new IdLeaf(lexVal)); :}
+	| CallFun:callFunNode {: RESULT = new ExprNode(callFunNode); :}
+	| Expr:exprNode1 PLUS Expr:exprNode2
+    {: RESULT = new ExprNode("AddOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  MINUS Expr:exprNode2
+{: RESULT = new ExprNode("DiffOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1 TIMES Expr:exprNode2
+{: RESULT = new ExprNode("MulOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1 DIV Expr:exprNode2
+{: RESULT = new ExprNode("DivOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  DIVINT Expr:exprNode2
+{: RESULT = new ExprNode("DivIntOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  AND Expr:exprNode2
+{: RESULT = new ExprNode("AndOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1 POW Expr:exprNode2
+{: RESULT = new ExprNode("PowOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1 STR_CONCAT Expr:exprNode2
+{: RESULT = new ExprNode("StrCatOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  OR Expr:exprNode2
+{: RESULT = new ExprNode("OrOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  GT Expr:exprNode2
+{: RESULT = new ExprNode("GTOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  GE Expr:exprNode2
+{: RESULT = new ExprNode("GEOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  LT Expr:exprNode2
+{: RESULT = new ExprNode("LTOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  LE Expr:exprNode2
+{: RESULT = new ExprNode("LEOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  EQ Expr:exprNode2
+{: RESULT = new ExprNode("EQOp", exprNode1, exprNode2); :}
+	| Expr:exprNode1  NE Expr:exprNode2
+{: RESULT = new ExprNode("NEOp", exprNode1, exprNode2); :}
+	| MINUS Expr:exprNode1 {: RESULT = new ExprNode("UminusOp", exprNode1); :}
+	| NOT Expr:exprNode1 {: RESULT = new ExprNode("NotOp", exprNode1); :}
+	| LPAR Expr:exprNode1 RPAR {: RESULT = new ExprNode(exprNode1); :};

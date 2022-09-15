@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="trovato-rastelli_es5_scg:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/trovato_rastelli_es5_scg_jar</output-path>
+    <root id="archive" name="trovato-rastelli_es5_scg.jar">
+      <element id="module-output" name="trovato-rastelli_es5_scg" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../librerie/java-cup-11b-runtime.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
