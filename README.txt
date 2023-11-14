@@ -1,3 +1,5 @@
+A pseudo-pascal compiler.
+
 SDK: 16 version 16
 Language level: 16
 
